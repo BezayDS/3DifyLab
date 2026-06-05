@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bambina 3D Print — 3D Друк та Моделювання в Україні</title>
+  <meta name="description" content="Професійний 3D друк та моделювання на замовлення. Швидко, якісно, доступно. Прототипи, сувеніри, запчастини, декор." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --neon: #00ff88;
+      --neon2: #00cc66;
+      --neon-dim: rgba(0, 255, 136, 0.15);
+      --neon-glow: 0 0 8px #00ff88, 0 0 20px rgba(0,255,136,0.4);
+      --bg: #050b12;
+      --bg2: #080f18;
+      --bg3: #0b1622;
+      --surface: rgba(0,255,136,0.04);
+      --border: rgba(0,255,136,0.18);
+      --text: #c8e8f5;
+      --text-dim: #5a7a90;
+      --accent: #ff4d6d;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CUSTOM CURSOR */
+    .cursor {
+      position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+      width: 10px; height: 10px;
+      background: var(--neon);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s;
+      box-shadow: var(--neon-glow);
+    }
+    .cursor-ring {
+      position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998;
+      width: 32px; height: 32px;
+      border: 1px solid rgba(0,255,136,0.5);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease-out, width 0.2s, height 0.2s;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* SCANLINES */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 48px;
+      background: rgba(5,11,18,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px; font-weight: 700;
+      color: var(--neon);
+      text-shadow: var(--neon-glow);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+    .logo span { color: var(--text-dim); }
+    nav ul {
+      list-style: none; display: flex; gap: 32px;
+    }
+    nav a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 400;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+    nav a:hover { color: var(--neon); text-shadow: var(--neon-glow); }
+
+    /* SECTIONS */
+    section { position: relative; z-index: 2; }
+
+    /* HERO */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--neon);
+      border: 1px solid var(--border);
+      background: var(--neon-dim);
+      padding: 6px 18px;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-title {
+      font-size: clamp(44px, 8vw, 96px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    .hero-title .line1 { display: block; color: var(--text); }
+    .hero-title .line2 {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--neon);
+      text-shadow: none;
+      filter: drop-shadow(0 0 12px rgba(0,255,136,0.5));
+    }
+
+    .hero-sub {
+      font-size: 16px; font-weight: 300;
+      color: var(--text-dim);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .hero-cta {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    .btn-primary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--bg);
+      background: var(--neon);
+      border: none;
+      padding: 14px 36px;
+      border-radius: 2px;
+      cursor: none;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 20px rgba(0,255,136,0.4), inset 0 0 0 0 rgba(255,255,255,0.1);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(0,255,136,0.7), 0 0 80px rgba(0,255,136,0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--neon);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 14px 36px;
+      border-radius: 2px;
+      cursor: none;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--neon);
+      background: var(--neon-dim);
+      transform: translateY(-2px);
+    }
+
+    /* ROTATING 3D CUBE HERO VISUAL */
+    .hero-visual {
+      margin-top: 60px;
+      position: relative;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+    .scene {
+      width: 120px; height: 120px;
+      perspective: 600px;
+      margin: 0 auto;
+    }
+    .cube {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: rotateCube 8s linear infinite;
+    }
+    .cube-face {
+      position: absolute; width: 120px; height: 120px;
+      border: 1px solid rgba(0,255,136,0.4);
+      background: rgba(0,255,136,0.03);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: rgba(0,255,136,0.6);
+      letter-spacing: 2px;
+    }
+    .cube-face.front  { transform: translateZ(60px); }
+    .cube-face.back   { transform: rotateY(180deg) translateZ(60px); }
+    .cube-face.right  { transform: rotateY(90deg) translateZ(60px); }
+    .cube-face.left   { transform: rotateY(-90deg) translateZ(60px); }
+    .cube-face.top    { transform: rotateX(90deg) translateZ(60px); }
+    .cube-face.bottom { transform: rotateX(-90deg) translateZ(60px); }
+
+    @keyframes rotateCube {
+      from { transform: rotateX(20deg) rotateY(0deg); }
+      to   { transform: rotateX(20deg) rotateY(360deg); }
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; justify-content: center; gap: 64px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px; font-weight: 700;
+      color: var(--neon);
+      text-shadow: var(--neon-glow);
+    }
+    .stat-label {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); margin-top: 4px;
+    }
+
+    /* SERVICES */
+    #services {
+      padding: 100px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--neon); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 700; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 15px; color: var(--text-dim);
+      max-width: 540px; line-height: 1.7;
+      margin-bottom: 56px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px;
+    }
+
+    .service-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, background 0.3s;
+      cursor: none;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover::before { transform: translateX(100%); }
+    .service-card:hover {
+      border-color: rgba(0,255,136,0.4);
+      background: rgba(0,255,136,0.04);
+    }
+
+    .service-icon {
+      font-size: 32px; margin-bottom: 20px;
+      display: block;
+    }
+    .service-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--text-dim);
+      letter-spacing: 2px; margin-bottom: 12px;
+      position: absolute; top: 20px; right: 24px;
+    }
+    .service-title {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 10px; color: var(--text);
+    }
+    .service-desc {
+      font-size: 14px; color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .service-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 20px;
+    }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 1px;
+      color: var(--neon); border: 1px solid var(--border);
+      padding: 3px 8px; border-radius: 2px;
+      background: var(--neon-dim);
+    }
+
+    /* PROCESS */
+    #process {
+      padding: 100px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .process-inner {
+      max-width: 1100px; margin: 0 auto;
+    }
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0;
+      margin-top: 56px;
+      position: relative;
+    }
+    .process-step {
+      padding: 32px 28px;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .process-step:last-child { border-right: none; }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 48px; font-weight: 700;
+      color: rgba(0,255,136,0.35);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .step-title {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 13px; color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* MATERIALS / SPECS */
+    #specs {
+      padding: 100px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 56px;
+    }
+    @media (max-width: 700px) { .specs-grid { grid-template-columns: 1fr; } }
+
+    .spec-block {
+      border: 1px solid var(--border);
+      padding: 32px;
+      background: var(--bg2);
+    }
+    .spec-block-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--neon); margin-bottom: 24px;
+    }
+    .spec-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,255,136,0.07);
+      font-size: 13px;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-key { color: var(--text-dim); }
+    .spec-val { color: var(--text); font-weight: 600; }
+
+    /* SOCIAL PROOF */
+    #social {
+      padding: 80px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+    .social-inner {
+      max-width: 900px; margin: 0 auto; text-align: center;
+    }
+    .social-links {
+      display: flex; gap: 20px; justify-content: center;
+      flex-wrap: wrap; margin-top: 36px;
+    }
+    .social-btn {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 14px 28px;
+      border-radius: 2px;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: none;
+    }
+    .social-btn:hover {
+      border-color: var(--neon);
+      color: var(--neon);
+      background: var(--neon-dim);
+    }
+    .social-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* FAQ */
+    #faq {
+      padding: 100px 24px;
+      max-width: 800px; margin: 0 auto;
+    }
+    .faq-list { margin-top: 48px; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+    .faq-q {
+      width: 100%;
+      background: none; border: none;
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 16px; font-weight: 600;
+      text-align: left;
+      padding: 20px 0;
+      cursor: none;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: color 0.2s;
+    }
+    .faq-q:hover { color: var(--neon); }
+    .faq-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px; color: var(--neon);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-a {
+      font-size: 14px; color: var(--text-dim);
+      line-height: 1.7;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.2s;
+    }
+    .faq-item.open .faq-a {
+      max-height: 300px;
+      padding-bottom: 20px;
+    }
+
+    /* CONTACT */
+    #contact {
+      padding: 100px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+    .contact-inner {
+      max-width: 700px; margin: 0 auto;
+    }
+    .contact-form {
+      margin-top: 48px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      padding: 12px 16px;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--neon);
+      box-shadow: 0 0 0 2px rgba(0,255,136,0.1);
+    }
+    .form-select option { background: var(--bg3); }
+    .form-textarea {
+      resize: vertical; min-height: 120px; line-height: 1.6;
+    }
+    .form-submit {
+      align-self: flex-start;
+    }
+
+    .form-notice {
+      font-size: 12px; color: var(--text-dim);
+      margin-top: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .form-success {
+      display: none;
+      padding: 20px 24px;
+      border: 1px solid var(--neon);
+      background: var(--neon-dim);
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; color: var(--neon);
+      letter-spacing: 1px;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+      position: relative; z-index: 2;
+    }
+    .footer-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px; font-weight: 700;
+      color: var(--neon);
+      text-shadow: var(--neon-glow);
+      text-decoration: none;
+    }
+    .footer-copy {
+      font-size: 12px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .footer-links {
+      display: flex; gap: 24px;
+    }
+    .footer-links a {
+      font-size: 12px; color: var(--text-dim);
+      text-decoration: none; letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--neon); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* MOBILE NAV */
+    .nav-toggle { display: none; }
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      nav ul { display: none; }
+      .nav-toggle {
+        display: block;
+        background: none; border: 1px solid var(--border);
+        color: var(--neon); padding: 6px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px; cursor: pointer; border-radius: 2px;
+      }
+      nav.open ul {
+        display: flex; flex-direction: column;
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--bg); border-bottom: 1px solid var(--border);
+        padding: 20px 24px; gap: 20px;
+      }
+      .stats-bar { gap: 32px; padding: 24px 24px; }
+    }
+
+    /* NEON LINE ACCENTS */
+    .neon-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      margin: 0;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="logo">bambina<span>_</span>3dprint</a>
+  <button class="nav-toggle" onclick="document.getElementById('nav').classList.toggle('open')">МЕНЮ</button>
+  <ul>
+    <li><a href="#services" onclick="document.getElementById('nav').classList.remove('open')">Послуги</a></li>
+    <li><a href="#process" onclick="document.getElementById('nav').classList.remove('open')">Як це працює</a></li>
+    <li><a href="#specs" onclick="document.getElementById('nav').classList.remove('open')">Матеріали</a></li>
+    <li><a href="#faq" onclick="document.getElementById('nav').classList.remove('open')">FAQ</a></li>
+    <li><a href="#contact" onclick="document.getElementById('nav').classList.remove('open')">Замовити</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge">// 3D ДРУК НА ЗАМОВЛЕННЯ · УКРАЇНА</div>
+  <h1 class="hero-title">
+    <span class="line1">Втілюємо ідеї</span>
+    <span class="line2">у реальність</span>
+  </h1>
+  <p class="hero-sub">Професійний 3D друк та моделювання. Прототипи, сувеніри, запчастини, декор — від ескізу до готового виробу.</p>
+  <div class="hero-cta">
+    <a href="#contact" class="btn-primary">Зробити замовлення</a>
+    <a href="#services" class="btn-secondary">Дивитися послуги</a>
+  </div>
+  <div class="hero-visual">
+    <div class="scene">
+      <div class="cube">
+        <div class="cube-face front">3D</div>
+        <div class="cube-face back">FDM</div>
+        <div class="cube-face right">PLA</div>
+        <div class="cube-face left">SILK</div>
+        <div class="cube-face top">CAD</div>
+        <div class="cube-face bottom">PETG</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat reveal">
+    <div class="stat-num">PLA / PETG</div>
+    <div class="stat-label">Матеріали</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">0.1 мм</div>
+    <div class="stat-label">Точність шару</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">24–72 год</div>
+    <div class="stat-label">Середній термін</div>
+  </div>
+</div>
+
+<div class="neon-line"></div>
+
+<!-- SERVICES -->
+<section id="services">
+  <p class="section-label reveal">// 01 — Послуги</p>
+  <h2 class="section-title reveal">Що ми друкуємо</h2>
+  <p class="section-desc reveal">Від невеликих деталей до складних виробів. Працюємо з вашими файлами або розробляємо модель з нуля.</p>
+
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <span class="service-icon">⚙️</span>
+      <span class="service-num">01</span>
+      <div class="service-title">Прототипи та деталі</div>
+      <div class="service-desc">Запчастини, технічні вироби, кронштейни, кріплення. Швидке прототипування для інженерних задач.</div>
+      <div class="service-tags">
+        <span class="tag">PETG</span>
+        <span class="tag">PLA+</span>
+        <span class="tag">CAD</span>
+      </div>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🎨</span>
+      <span class="service-num">02</span>
+      <div class="service-title">Сувеніри та подарунки</div>
+      <div class="service-desc">Персоналізовані фігурки, брелоки, таблички, декор. Унікальні подарунки з іменем або логотипом.</div>
+      <div class="service-tags">
+        <span class="tag">PLA</span>
+        <span class="tag">Колір</span>
+        <span class="tag">Персоналізація</span>
+      </div>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🏠</span>
+      <span class="service-num">03</span>
+      <div class="service-title">Декор та інтер'єр</div>
+      <div class="service-desc">Горщики для рослин, органайзери, рамки, настінні панелі, вази. Функціональний і красивий декор.</div>
+      <div class="service-tags">
+        <span class="tag">PLA</span>
+        <span class="tag">WOOD</span>
+        <span class="tag">Матовий</span>
+      </div>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🎭</span>
+      <span class="service-num">04</span>
+      <div class="service-title">Косплей та іграшки</div>
+      <div class="service-desc">Маски, шоломи, реквізит, фігурки персонажів. Деталізовані вироби для косплею та колекцій.</div>
+      <div class="service-tags">
+        <span class="tag">PLA+</span>
+        <span class="tag">Постобробка</span>
+        <span class="tag">Фарбування</span>
+      </div>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🏢</span>
+      <span class="service-num">05</span>
+      <div class="service-title">Бізнес та брендинг</div>
+      <div class="service-desc">Логотипи, корпоративні сувеніри, таблички, стенди. Рекламна продукція з вашим брендом.</div>
+      <div class="service-tags">
+        <span class="tag">Серії</span>
+        <span class="tag">Логотип</span>
+        <span class="tag">Дрібний опт</span>
+      </div>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">📐</span>
+      <span class="service-num">06</span>
+      <div class="service-title">3D Моделювання</div>
+      <div class="service-desc">Розробка моделей з нуля за описом, фото або ескізом. STL-файл у комплекті або для самостійного друку.</div>
+      <div class="service-tags">
+        <span class="tag">Blender</span>
+        <span class="tag">STL</span>
+        <span class="tag">Замовна модель</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="neon-line"></div>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="process-inner">
+    <p class="section-label reveal">// 02 — Процес</p>
+    <h2 class="section-title reveal">Як зробити замовлення</h2>
+    <p class="section-desc reveal">Все просто — від першого повідомлення до отримання виробу.</p>
+
+    <div class="process-steps">
+      <div class="process-step reveal">
+        <div class="step-num">01</div>
+        <div class="step-title">Опишіть задачу</div>
+        <div class="step-desc">Надішліть фото, ескіз або STL-файл. Або просто опишіть словами — розберемося разом.</div>
+      </div>
+      <div class="process-step reveal">
+        <div class="step-num">02</div>
+        <div class="step-title">Розрахунок вартості</div>
+        <div class="step-desc">Протягом кількох годин надаємо точну ціну та терміни виконання.</div>
+      </div>
+      <div class="process-step reveal">
+        <div class="step-num">03</div>
+        <div class="step-title">Друк та контроль</div>
+        <div class="step-desc">Запускаємо виробництво. Фото прогресу за запитом. Перевірка якості перед відправкою.</div>
+      </div>
+      <div class="process-step reveal">
+        <div class="step-num">04</div>
+        <div class="step-title">Доставка</div>
+        <div class="step-desc">Відправка по Україні Новою Поштою або самовивіз. Надійна упаковка включена.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="neon-line"></div>
+
+<!-- SPECS / MATERIALS -->
+<section id="specs">
+  <p class="section-label reveal">// 03 — Технічні характеристики</p>
+  <h2 class="section-title reveal">Матеріали та можливості</h2>
+  <p class="section-desc reveal">Використовуємо якісні філаменти від перевірених виробників.</p>
+
+  <div class="specs-grid">
+    <div class="spec-block reveal">
+      <div class="spec-block-title">// Матеріали</div>
+      <div class="spec-row"><span class="spec-key">PLA / PLA+</span><span class="spec-val">Стандарт, деталі</span></div>
+      <div class="spec-row"><span class="spec-key">PETG</span><span class="spec-val">Міцність, вологостійкість</span></div>
+      <div class="spec-row"><span class="spec-key">Silk / Glossy</span><span class="spec-val">Декор, сувеніри</span></div>
+      <div class="spec-row"><span class="spec-key">Wood / Marble</span><span class="spec-val">Текстурний ефект</span></div>
+    </div>
+    <div class="spec-block reveal">
+      <div class="spec-block-title">// Технічні параметри</div>
+      <div class="spec-row"><span class="spec-key">Точність шару</span><span class="spec-val">0.1 — 0.3 мм</span></div>
+      <div class="spec-row"><span class="spec-key">Макс. розмір виробу</span><span class="spec-val">175 × 175 × 175 мм</span></div>
+      <div class="spec-row"><span class="spec-key">Товщина стінки</span><span class="spec-val">від 0.8 мм</span></div>
+      <div class="spec-row"><span class="spec-key">Заповнення</span><span class="spec-val">5% — 100%</span></div>
+      <div class="spec-row"><span class="spec-key">Файли</span><span class="spec-val">STL, OBJ, STEP, 3MF</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="neon-line"></div>
+
+<!-- SOCIAL -->
+<section id="social">
+  <div class="social-inner">
+    <p class="section-label reveal">// 04 — Соцмережі</p>
+    <h2 class="section-title reveal">Дивіться наші роботи</h2>
+    <p class="section-desc reveal" style="margin: 0 auto 0;">Підписуйтесь — публікуємо нові роботи, процеси друку та корисний контент про 3D технології.</p>
+    <div class="social-links">
+      <a href="https://www.instagram.com/bambina3dprint" target="_blank" class="social-btn reveal">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Instagram
+      </a>
+      <a href="https://www.tiktok.com/@bambina3dprint" target="_blank" class="social-btn reveal">
+        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+        TikTok
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="neon-line"></div>
+
+<!-- FAQ -->
+<section id="faq">
+  <p class="section-label reveal">// 05 — Питання та відповіді</p>
+  <h2 class="section-title reveal">FAQ</h2>
+
+  <div class="faq-list">
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Як передати замовлення? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Надішліть заявку через форму нижче або в Instagram/TikTok @bambina3dprint. Якщо є файл — прикріпіть. Якщо немає — опишіть ідею і ми допоможемо з моделлю.</div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Скільки коштує 3D друк? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Ціна залежить від розміру, складності, матеріалу та кількості. Невеликий виріб — від 50–100 грн. Напишіть нам — зробимо безкоштовний прорахунок за кілька годин.</div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Які терміни виконання? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Стандартно 1–3 дні після підтвердження замовлення. Термінові замовлення обговорюються індивідуально.</div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Чи є доставка? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Так, відправляємо Новою Поштою по всій Україні. Надійна упаковка включена у вартість.</div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Можна замовити без готового STL файлу? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Так! Можемо розробити 3D модель з нуля — за описом, фото або ескізом. Моделювання оплачується окремо.</div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Яке максимальне замовлення? <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Працюємо з серійними замовленнями від 2 до декількох десятків одиниць. При великих обсягах — знижка. Обговоримо індивідуально.</div>
+    </div>
+  </div>
+</section>
+
+<div class="neon-line"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <p class="section-label reveal">// 06 — Зворотній зв'язок</p>
+    <h2 class="section-title reveal">Зробити замовлення</h2>
+    <p class="section-desc reveal">Опишіть задачу — відповімо протягом кількох годин з розрахунком вартості.</p>
+
+    <form class="contact-form reveal" id="contactForm" onsubmit="handleSubmit(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ваше ім'я *</label>
+          <input class="form-input" type="text" placeholder="Олексій" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Телефон / Telegram *</label>
+          <input class="form-input" type="text" placeholder="+380 або @username" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Тип замовлення</label>
+        <select class="form-select">
+          <option value="">Оберіть категорію...</option>
+          <option>Прототип / Технічна деталь</option>
+          <option>Сувенір / Подарунок</option>
+          <option>Декор / Інтер'єр</option>
+          <option>Косплей / Іграшка</option>
+          <option>Бізнес / Брендинг</option>
+          <option>3D Моделювання з нуля</option>
+          <option>Інше</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Опис замовлення *</label>
+        <textarea class="form-textarea" placeholder="Опишіть що потрібно: розмір, матеріал, кількість, колір, терміни. Або просто ідею — розберемося разом." required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Є готовий STL/файл?</label>
+        <select class="form-select">
+          <option>Ні, потрібна допомога з моделлю</option>
+          <option>Так, можу надіслати в месенджері</option>
+          <option>Є ескіз / фото для розробки</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary form-submit">Надіслати заявку →</button>
+      <p class="form-notice">* Відповідаємо в Instagram або Telegram</p>
+    </form>
+    <div class="form-success" id="formSuccess">
+      ✓ ЗАЯВКУ ОТРИМАНО — Відповімо найближчим часом!
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#hero" class="footer-logo">bambina_3dprint</a>
+  <div class="footer-links">
+    <a href="https://www.instagram.com/bambina3dprint" target="_blank">Instagram</a>
+    <a href="https://www.tiktok.com/@bambina3dprint" target="_blank">TikTok</a>
+  </div>
+  <div class="footer-copy">© 2024 bambina3dprint · Україна</div>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animateCursor() {
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // SCROLL REVEAL
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FAQ
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  }
+
+  // FORM SUBMIT
+  function handleSubmit(e) {
+    e.preventDefault();
+    document.getElementById('contactForm').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  }
+
+  // NAV SCROLL STYLE
+  window.addEventListener('scroll', () => {
+    document.getElementById('nav').style.background =
+      window.scrollY > 50 ? 'rgba(5,11,18,0.97)' : 'rgba(5,11,18,0.85)';
+  });
+</script>
+</body>
+</html>
